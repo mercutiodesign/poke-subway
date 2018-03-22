@@ -16,6 +16,7 @@ Icon?
 # IntelliJ specific files/directories
 out
 .idea
+*.iml
 
 .gradle
 /build/
