@@ -7,6 +7,7 @@ import de.merc.pokekotlin.model.Generation
 import de.merc.pokekotlin.model.NamedApiResourceList
 import de.merc.pokekotlin.model.PokemonSpecies
 import java.io.File
+import java.net.URLEncoder
 import java.util.concurrent.TimeUnit
 import kotlin.system.measureNanoTime
 
@@ -74,6 +75,25 @@ fun main(args: Array<String>) {
                 println("${team.map { it.getName() }}: ${gens.min()} - $maxGen")
             }
         }
+        println()
+
+        println("---------  most common pokemon  ---------")
+        val all = mutableListOf<PokemonSpecies>()
+        teams.forEach { all += it }
+        all.groupingBy { it }
+                .eachCount()
+                .entries
+                .sortedByDescending { e -> e.value }
+                .take(20)
+                .forEach { (species, count) ->
+                    println("%-15s | %-70s | %-15s | %2d".format(
+                            species.getName("de"),
+                            "https://bulbapedia.bulbagarden.net/wiki/${URLEncoder.encode(species.getName(), "UTF-8")}#Game_locations",
+                            species.generation.name,
+                            count))
+                }
+
+
     }
 }
 
