@@ -65,6 +65,7 @@ object TestProperties {
     @JvmStatic
     fun main(args: Array<String>) {
         val data = readOldDb("cache.db")
+
         val propFile = File("cache.properties")
         if (!propFile.exists()) {
             logTiming("writing properties") {
@@ -83,6 +84,74 @@ object TestProperties {
         }
 
         println("${data.size} => ${other.size} : ${data == other}")
+    }
+}
+
+
+object TestPlain {
+    @JvmStatic
+    fun main(args: Array<String>) {
+        val data = readOldDb("cache.db")
+
+        val propFile = File("cache.txt")
+        if (!propFile.exists()) {
+            logTiming("writing txt") {
+                propFile.bufferedWriter().use { wr ->
+                    data.forEach { key, value ->
+                        wr.append(key).append(0.toChar()).append(value).append('\n')
+                    }
+                }
+            }
+        }
+        val other = mutableMapOf<String, String>()
+        logTiming("reading txt") {
+            propFile.useLines {
+                it.forEach {
+                    val (key, value) = it.split(0.toChar(), limit = 2)
+                    other[key] = value
+                }
+            }
+        }
+
+        println("${data.size} => ${other.size} : ${data == other}")
+        if (data != other) {
+            println(other)
+            propFile.delete()
+        }
+    }
+}
+
+
+object TestPlainGzip {
+    @JvmStatic
+    fun main(args: Array<String>) {
+        val data = readOldDb("cache.db")
+
+        val propFile = File("cache.txt.gz")
+        if (!propFile.exists()) {
+            logTiming("writing txt.gz") {
+                GZIPOutputStream(propFile.outputStream()).bufferedWriter().use { wr ->
+                    data.forEach { key, value ->
+                        wr.append(key).append(0.toChar()).append(value).append('\n')
+                    }
+                }
+            }
+        }
+        val other = mutableMapOf<String, String>()
+        logTiming("reading txt.gz") {
+            GZIPInputStream(propFile.inputStream()).bufferedReader().useLines {
+                it.forEach {
+                    val (key, value) = it.split(0.toChar(), limit = 2)
+                    other[key] = value
+                }
+            }
+        }
+
+        println("${data.size} => ${other.size} : ${data == other}")
+        if (data != other) {
+            println(other)
+            propFile.delete()
+        }
     }
 }
 
